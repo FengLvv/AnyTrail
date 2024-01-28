@@ -1,0 +1,67 @@
+#pragma kernel Wave
+#pragma kernel Swap
+//https://web.archive.org/web/20160418004149/http://freespace.virgin.net/hugo.elias/graphics/x_water.htm
+//X
+RWTexture2D<float4> _WaveRT;
+
+struct ForceStruct {
+    float2 pos;
+    float radius;
+    float2 direction;
+    float intensity;
+};
+
+StructuredBuffer<ForceStruct> forcePosBuffer;
+int forceCount;
+float disappearStep;
+
+float damping = 0.99;
+#include "../DataAndTools/AnyTrailComputeInclude.hlsl"
+
+//传入角色移动的大小，根据移动采样上一帧的轨迹图，得到这一帧的轨迹图
+[numthreads(8,8,1)]
+void Wave(uint3 id : SV_DispatchThreadID)
+{
+    float thisFrame = _WaveRT[id.xy].z;
+    //对每一个力进行计算
+    for (int i = 0; i < forceCount; i++)
+    {
+        int radius = forcePosBuffer[i].radius;
+        int2 pos = forcePosBuffer[i].pos;
+        float dist = distance(id.xy, pos.xy);
+        float intensity = forcePosBuffer[i].intensity;
+
+        
+        if (intensity > 0)
+        {
+            if ((int)id.x == pos.x && (int)id.y == pos.y)
+            {
+                thisFrame = intensity;
+            }
+        }
+     
+    }
+
+
+    float waveZ;
+    waveZ = (_WaveRT[float2(id.x - 1, id.y)].x +
+             _WaveRT[float2(id.x + 1, id.y)].x +
+             _WaveRT[float2(id.x, id.y - 1)].x +
+             _WaveRT[float2(id.x, id.y + 1)]).x / 2 -
+            thisFrame;
+    waveZ *= damping;
+
+
+    float4 color = float4(_WaveRT[id.xy].xy, waveZ-disappearStep, 0);
+    _WaveRT[id.xy] = color;
+    // _WaveRT[id.xy] = 1;
+}
+
+
+//交换两个RT
+[numthreads(8,8,1)]
+void Swap(uint3 id : SV_DispatchThreadID)
+{
+    float2 waveXZ = _WaveRT[id.xy].xz;
+    _WaveRT[id.xy] = float4(waveXZ.y, 0, waveXZ.x, 0);
+}
