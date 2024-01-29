@@ -2,7 +2,7 @@
 Create any shape of trail under player and generate RT
 -  Code by pure compute shader
 - Support fluid / trail / wave / patterns
-- Trail will be drawen on a canvas moving with player(refreshing in realtime), so you can draw more detail within screen and erase trails outside screen
+- Trail will be drawn on a canvas moving with player(refreshing in realtime), so you can draw more detail within screen and erase trails outside screen
 - Can be used to 
     - Draw 2D fluid/wave on the surface of water, and use the RT as bumpmap to water
     - Draw trail of any shape of footprints(by customizing pattern) on sand/snow
