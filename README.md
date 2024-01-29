@@ -18,4 +18,4 @@ Create any shape of trail under player and generate RT
 - **WSAD to move, SPACE button to draw, 1234 to open/close different drawers**
 
 # Demo
-[![AnyTrail demo](https://i.ytimg.com/vi/e6gWxhttTLo/maxresdefault.jpg)](https://youtu.be/e6gWxhttTLo "AnyTrail demo")
+[![](https://i.ytimg.com/vi/e34BJWlViKs/maxresdefault.jpg)](https://youtu.be/e34BJWlViKs "")
