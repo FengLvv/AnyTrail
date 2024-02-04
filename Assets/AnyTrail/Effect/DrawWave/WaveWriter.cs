@@ -10,7 +10,7 @@ namespace AnyTrail.Effect.DrawWave {
 			Vector2 dir2D = new Vector2( directionWS.x, directionWS.z );
 			if( intensity > 0 ) {
 				ForceStruct.pos = pos2D;
-				ForceStruct.radius = radius;
+				ForceStruct.radius = radius/20;
 				ForceStruct.direction = dir2D.normalized;
 				ForceStruct.intensity = intensity;
 				return ForceStruct;

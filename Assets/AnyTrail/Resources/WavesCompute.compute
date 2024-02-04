@@ -34,33 +34,55 @@ void Wave(uint3 id : SV_DispatchThreadID)
     //对每一个力进行计算
     for (int i = 0; i < forceCount; i++)
     {
-        // int radius = forcePosBuffer[i].radius;
+        const int radius = max(forcePosBuffer[i].radius,0.1f);
         int2 pos = forcePosBuffer[i].pos;
-        // float dist = distance(id.xy, pos.xy);
         const float intensity = forcePosBuffer[i].intensity;
 
         if (intensity > 0)
         {
-            if ((int)id.x == pos.x && (int)id.y + 1 == pos.y)
+            if (distance(float2((int)id.x,(int)id.y + 1 ), pos.xy)<=radius)
             {
                 thisFrameUp = intensity;
             }
-            else if ((int)id.x == pos.x && (int)id.y - 1 == pos.y)
+            else if (distance(float2((int)id.x,(int)id.y - 1 ), pos.xy)<=radius)
             {
                 thisFrameDown = intensity;
             }
-            else if ((int)id.x - 1 == pos.x && (int)id.y == pos.y)
+            else if (distance(float2((int)id.x - 1,(int)id.y ), pos.xy)<=radius)
             {
                 thisFrameLeft = intensity;
             }
-            else if ((int)id.x + 1 == pos.x && (int)id.y == pos.y)
+            else if (distance(float2((int)id.x + 1,(int)id.y ), pos.xy)<=radius)
             {
                 thisFrameRight = intensity;
             }
-            else if ((int)id.x == pos.x && (int)id.y == pos.y)
+            else if (distance(float2((int)id.x,(int)id.y ), pos.xy)<=radius)
             {
                 thisFrameMid = intensity;
             }
+
+            //
+            //
+            // if ((int)id.x == pos.x && (int)id.y + 1 == pos.y)
+            // {
+            //     thisFrameUp = intensity;
+            // }
+            // else if ((int)id.x == pos.x && (int)id.y - 1 == pos.y)
+            // {
+            //     thisFrameDown = intensity;
+            // }
+            // else if ((int)id.x - 1 == pos.x && (int)id.y == pos.y)
+            // {
+            //     thisFrameLeft = intensity;
+            // }
+            // else if ((int)id.x + 1 == pos.x && (int)id.y == pos.y)
+            // {
+            //     thisFrameRight = intensity;
+            // }
+            // else if ((int)id.x == pos.x && (int)id.y == pos.y)
+            // {
+            //     thisFrameMid = intensity;
+            // }
         }
     }
 

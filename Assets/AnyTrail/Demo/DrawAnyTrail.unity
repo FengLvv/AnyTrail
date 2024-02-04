@@ -1207,7 +1207,7 @@ MonoBehaviour:
     dt: 0.0025
   waveCanvas: 1
   waveParam:
-    dampling: 0.96
+    dampling: 0.984
     disappearStep: 0.013
   trailCanvas: 1
   trailParam:
