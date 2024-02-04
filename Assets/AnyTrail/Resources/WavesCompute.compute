@@ -19,49 +19,62 @@ float damping = 0.99;
 #include "../DataAndTools/AnyTrailComputeInclude.hlsl"
 
 //传入角色移动的大小，根据移动采样上一帧的轨迹图，得到这一帧的轨迹图
+//x:这一帧的轨迹图,y:上一帧的轨迹图,z:下一帧的轨迹图
 [numthreads(8,8,1)]
 void Wave(uint3 id : SV_DispatchThreadID)
 {
-    float thisFrame = _WaveRT[id.xy].z;
+    float4 rt = _WaveRT[id.xy];
+    float thisFrameMid = rt.x;
+    float thisFrameUp = _WaveRT[float2(id.x, id.y + 1)].x;
+    float thisFrameDown = _WaveRT[float2(id.x, id.y - 1)].x;
+    float thisFrameLeft = _WaveRT[float2(id.x - 1, id.y)].x;
+    float thisFrameRight = _WaveRT[float2(id.x + 1, id.y)].x;
+    float lastFrameMid = rt.y;
+
     //对每一个力进行计算
     for (int i = 0; i < forceCount; i++)
     {
-        int radius = forcePosBuffer[i].radius;
+        // int radius = forcePosBuffer[i].radius;
         int2 pos = forcePosBuffer[i].pos;
-        float dist = distance(id.xy, pos.xy);
-        float intensity = forcePosBuffer[i].intensity;
+        // float dist = distance(id.xy, pos.xy);
+        const float intensity = forcePosBuffer[i].intensity;
 
-        
         if (intensity > 0)
         {
-            if ((int)id.x == pos.x && (int)id.y == pos.y)
+            if ((int)id.x == pos.x && (int)id.y + 1 == pos.y)
             {
-                thisFrame = intensity;
+                thisFrameUp = intensity;
+            }
+            else if ((int)id.x == pos.x && (int)id.y - 1 == pos.y)
+            {
+                thisFrameDown = intensity;
+            }
+            else if ((int)id.x - 1 == pos.x && (int)id.y == pos.y)
+            {
+                thisFrameLeft = intensity;
+            }
+            else if ((int)id.x + 1 == pos.x && (int)id.y == pos.y)
+            {
+                thisFrameRight = intensity;
+            }
+            else if ((int)id.x == pos.x && (int)id.y == pos.y)
+            {
+                thisFrameMid = intensity;
             }
         }
-     
     }
 
+    float nextFrameMid = (thisFrameUp + thisFrameDown + thisFrameLeft + thisFrameRight) / 2 - lastFrameMid;
+    nextFrameMid *= damping;
 
-    float waveZ;
-    waveZ = (_WaveRT[float2(id.x - 1, id.y)].x +
-             _WaveRT[float2(id.x + 1, id.y)].x +
-             _WaveRT[float2(id.x, id.y - 1)].x +
-             _WaveRT[float2(id.x, id.y + 1)]).x / 2 -
-            thisFrame;
-    waveZ *= damping;
-
-
-    float4 color = float4(_WaveRT[id.xy].xy, waveZ-disappearStep, 0);
-    _WaveRT[id.xy] = color;
-    // _WaveRT[id.xy] = 1;
+    _WaveRT[id.xy] = float4(thisFrameMid, lastFrameMid, nextFrameMid, 0);
 }
 
 
-//交换两个RT
+//x:下一帧的轨迹图 ,y:这一帧的轨迹图,z:0
 [numthreads(8,8,1)]
 void Swap(uint3 id : SV_DispatchThreadID)
 {
-    float2 waveXZ = _WaveRT[id.xy].xz;
-    _WaveRT[id.xy] = float4(waveXZ.y, 0, waveXZ.x, 0);
+    float4 wave = _WaveRT[id.xy];
+    _WaveRT[id.xy] = float4(wave.z, wave.x, 0, 0);
 }

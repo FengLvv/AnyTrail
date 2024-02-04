@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace AnyTrail.Effect.DrawWave {
 	//新建一个_AnyTrailWave的全局变量，用来在shader中传递RT
+	//x:这一帧的轨迹图,y:上一帧的轨迹图,z:下一帧的轨迹图
 	public sealed class DrawWave : CanvasComputerAbstract {
 		//kernel
 		int Wave_Kernel;
@@ -59,7 +60,7 @@ namespace AnyTrail.Effect.DrawWave {
 			forcePosBuffer = new ComputeBuffer( WriterCount, forceBufferStride );
 		}
 
-		protected override void Init( int Count, RTPara RTParameter ) {
+		override protected void Init( int Count, RTPara RTParameter ) {
 			//设置当无writer时是否停止计算
 			base.Init( Count, RTParameter );
 			WaveCompute = Resources.Load<ComputeShader>( "WavesCompute" );
@@ -71,6 +72,7 @@ namespace AnyTrail.Effect.DrawWave {
 			CreateRT();
 			InitShader();
 
+			//x:这一帧的轨迹图,y:上一帧的轨迹图,z:下一帧的轨迹图
 			Shader.SetGlobalTexture( AnyTrailWave, waveRT1 );
 		}
 
@@ -95,7 +97,7 @@ namespace AnyTrail.Effect.DrawWave {
 			base.AddWriterPara( writerPara );
 		}
 
-		protected override void Execute() {
+		override protected void Execute() {
 			forcePosBuffer.SetData( ForceStructArray );
 			WaveCompute.SetBuffer( Wave_Kernel, ForcePosBuffer, forcePosBuffer );
 			WaveCompute.SetInt( ForceCount, forcePosBuffer.count );
@@ -104,7 +106,6 @@ namespace AnyTrail.Effect.DrawWave {
 			ForceStructArray = new WaveWriterStructure[WriterCount];
 		}
 		void SimulateWave() {
-			//advection
 			WaveCompute.Dispatch( Wave_Kernel, rtPara.rtResolution / 8, rtPara.rtResolution / 8, 1 );
 			WaveCompute.Dispatch( Swap_Kernel, rtPara.rtResolution / 8, rtPara.rtResolution / 8, 1 );
 		}
